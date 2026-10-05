@@ -42,10 +42,12 @@ export function listRows(key: string): EntryRow[] {
 
 export function saveRows(key: string, rows: EntryRow[]): void {
   const next = { ...allRows(), [key]: rows }
-  cache = next
+  // 先落库再换缓存：localStorage 写失败时缓存保持原样，调用方看到的仍是写前快照，
+  // 批量督办台这类多表事务才能靠快照干净地回滚。
   if (typeof window !== 'undefined' && window.localStorage) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
   }
+  cache = next
 }
 
 export function resetRows(key: string): EntryRow[] {
